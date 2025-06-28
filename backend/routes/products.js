@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 
-// ดึงรายการสินค้าทั้งหมด
 router.get('/', async (req, res) => {
   try {
     const products = await Product.find();
@@ -12,22 +11,19 @@ router.get('/', async (req, res) => {
   }
 });
 
-// เพิ่มสินค้าใหม่
 router.post('/', async (req, res) => {
-  // ตรวจสอบข้อมูลที่จำเป็น
-  if (!req.body.name || !req.body.price || !req.body.affiliateLink) {
-    return res.status(400).json({ message: 'Missing required fields (name, price, affiliateLink)' });
+  const { name, price, image, affiliateLink, category, source } = req.body;
+  if (!name || !price || !affiliateLink) {
+    return res.status(400).json({ message: 'Missing required fields' });
   }
 
-  const product = new Product({
-    name: req.body.name,
-    price: req.body.price,
-    image: req.body.image,
-    affiliateLink: req.body.affiliateLink,
-    category: req.body.category,
-    source: req.body.source
-  });
+  // ตรวจสอบซ้ำตาม name และ price
+  const existingProduct = await Product.findOne({ name, price });
+  if (existingProduct) {
+    return res.status(400).json({ message: 'Product already exists' });
+  }
 
+  const product = new Product({ name, price, image, affiliateLink, category, source });
   try {
     const newProduct = await product.save();
     res.status(201).json(newProduct);
