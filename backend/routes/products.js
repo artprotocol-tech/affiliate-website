@@ -14,6 +14,11 @@ router.get('/', async (req, res) => {
 
 // เพิ่มสินค้าใหม่
 router.post('/', async (req, res) => {
+  // ตรวจสอบข้อมูลที่จำเป็น
+  if (!req.body.name || !req.body.price || !req.body.affiliateLink) {
+    return res.status(400).json({ message: 'Missing required fields (name, price, affiliateLink)' });
+  }
+
   const product = new Product({
     name: req.body.name,
     price: req.body.price,
